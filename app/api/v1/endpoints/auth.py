@@ -90,6 +90,11 @@ class GuestLoginRequest(CaptchaRequest):
     name: str | None = None
 
 
+class CaptchaConfigResponse(BaseModel):
+    provider: str
+    site_key: str | None = None
+
+
 def _hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
@@ -331,6 +336,23 @@ async def guest_login(payload: GuestLoginRequest | None = None) -> AuthSessionRe
         raise HTTPException(status_code=500, detail="Unable to create or load user")
 
     return _issue_session(_build_user_from_row(row))
+
+
+@router.get("/captcha", response_model=CaptchaConfigResponse)
+async def get_captcha_config() -> CaptchaConfigResponse:
+    provider = settings.get_captcha_provider()
+    site_key = None
+
+    if provider == "hcaptcha":
+        site_key = settings.get_hcaptcha_site_key()
+        if not site_key:
+            raise HTTPException(status_code=503, detail="hCaptcha site key is not configured")
+    elif provider == "recaptcha":
+        site_key = settings.get_recaptcha_site_key()
+        if not site_key:
+            raise HTTPException(status_code=503, detail="reCAPTCHA site key is not configured")
+
+    return CaptchaConfigResponse(provider=provider, site_key=site_key)
 
 
 @router.get("/google/authorize")

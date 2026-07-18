@@ -12,12 +12,20 @@ app = FastAPI(
     version="1.0.0"
 )
 
+from app.core.rate_limiter import RateLimitMiddleware
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+)
+
+app.add_middleware(
+    RateLimitMiddleware,
+    rate_limit=settings.rate_limit_requests,
+    window_seconds=settings.rate_limit_window_seconds,
 )
 
 init_db()

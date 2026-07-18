@@ -64,6 +64,16 @@ Base path: `/api/v1`
   - Status: `200`
   - Body: same shape as `/auth/token` response.
 
+### GET /auth/captcha
+- Purpose: Return the configured CAPTCHA provider and client site key for frontend CAPTCHA rendering.
+- Sample request: `GET /api/v1/auth/captcha`
+- Response:
+  - Status: `200`
+  - Body:
+    ```json
+    {"provider":"hcaptcha","site_key":"316a8b06-1878-49a2-b940-bfca3e26f6bc"}
+    ```
+
 ### POST /auth/github/login
 - Purpose: Create or sign in a GitHub-authenticated user with GitHub ID.
 - Dummy request:

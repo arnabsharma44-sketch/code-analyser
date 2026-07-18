@@ -14,7 +14,9 @@ class Settings(BaseSettings):
     github_oauth_client_secret: SecretStr | None = None
     github_oauth_redirect_uri: str = "http://localhost:8000/api/v1/auth/github/callback"
     captcha_provider: str = "none"
+    recaptcha_site_key: str | None = None
     recaptcha_secret_key: SecretStr | None = None
+    hcaptcha_site_key: str | None = None
     hcaptcha_secret_key: SecretStr | None = None
     openrouter_api_key: SecretStr | None = Field(
         default=None,
@@ -23,6 +25,8 @@ class Settings(BaseSettings):
     openrouter_model: str = "openai/gpt-4o"
     cors_origins: list[str] = ["http://localhost:3000"]
     max_upload_bytes: int = 200_000
+    rate_limit_requests: int = 100
+    rate_limit_window_seconds: int = 60
 
     def get_database_url(self) -> str:
         if self.database_url:
@@ -57,6 +61,18 @@ class Settings(BaseSettings):
             return None
         secret = self.recaptcha_secret_key.get_secret_value().strip()
         return secret or None
+
+    def get_recaptcha_site_key(self) -> str | None:
+        if self.recaptcha_site_key is None:
+            return None
+        site_key = self.recaptcha_site_key.strip()
+        return site_key or None
+
+    def get_hcaptcha_site_key(self) -> str | None:
+        if self.hcaptcha_site_key is None:
+            return None
+        site_key = self.hcaptcha_site_key.strip()
+        return site_key or None
 
     def get_hcaptcha_secret_key(self) -> str | None:
         if self.hcaptcha_secret_key is None:

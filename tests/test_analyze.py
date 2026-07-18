@@ -43,6 +43,14 @@ async def request(method: str, url: str, **kwargs) -> httpx.Response:
         return await client.request(method, url, **kwargs)
 
 
+@pytest.fixture(autouse=True)
+def disable_captcha_in_tests(monkeypatch):
+    async def _verify_captcha_token(token):
+        return None
+
+    monkeypatch.setattr("app.api.v1.endpoints.auth.verify_captcha_token", _verify_captcha_token)
+
+
 @pytest.mark.anyio
 async def test_health():
     response = await request("GET", "/api/v1/health/")
@@ -141,6 +149,25 @@ async def test_email_signup_and_login():
     )
     assert login_response.status_code == 200
     assert login_response.json()["user"]["email"] == email
+
+
+@pytest.mark.anyio
+async def test_captcha_config_returns_hcaptcha_site_key():
+    original_provider = settings.captcha_provider
+    original_site_key = settings.hcaptcha_site_key
+    try:
+        settings.captcha_provider = "hcaptcha"
+        settings.hcaptcha_site_key = "316a8b06-1878-49a2-b940-bfca3e26f6bc"
+
+        response = await request("GET", "/api/v1/auth/captcha")
+        assert response.status_code == 200
+        assert response.json() == {
+            "provider": "hcaptcha",
+            "site_key": "316a8b06-1878-49a2-b940-bfca3e26f6bc",
+        }
+    finally:
+        settings.captcha_provider = original_provider
+        settings.hcaptcha_site_key = original_site_key
 
 
 @pytest.mark.anyio
