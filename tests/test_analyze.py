@@ -1,6 +1,9 @@
+import os
 import asyncio
 import json
 import uuid
+
+os.environ.setdefault("AUTH_SECRET_KEY", "test-secret-key")
 
 import httpx
 import pytest
